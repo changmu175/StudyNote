@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="blade_20">20dp</dimen>
+    <dimen name="blade_16">16dp</dimen>
+    <dimen name="blade_progress_dialog_width">24dp</dimen>
+    <dimen name="blade_progress_dialog_height">24dp</dimen>
+    <dimen name="blade_font_14">14sp</dimen>
+
+</resources>

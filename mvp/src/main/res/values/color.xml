@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="blade_dialog_bg">#EEEEEEEE</color>
+    <color name="blade_black_65">#A6000000</color>
+    <color name="blade_title_gold">#CCB481</color>
+</resources>
