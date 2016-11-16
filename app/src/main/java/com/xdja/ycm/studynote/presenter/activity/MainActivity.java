@@ -9,6 +9,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 
 import com.xdja.ycm.studynote.R;
+import com.xdja.ycm.studynote.ui.NoteActivity;
 
 import butterknife.ButterKnife;
 import butterknife.InjectView;
@@ -42,7 +43,7 @@ public class MainActivity extends AppCompatActivity {
 //        camera_fab.setVisibility(View.VISIBLE);
 //        record_fab.setVisibility(View.VISIBLE);
         Intent intent = new Intent();
-        intent.setClass(this, FloatButtonActivity.class);
+        intent.setClass(this, NoteActivity.class);
         startActivity(intent);
     }
 

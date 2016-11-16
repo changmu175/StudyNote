@@ -6,7 +6,7 @@
     android:orientation="vertical">
 
 
-    <com.xdja.ycm.imageandtext.htmledittext.HtmlEditText
+    <com.xdja.ycm.studynote.ui.HtmlEditText
         android:id="@+id/edit_text"
         android:layout_width="match_parent"
         android:layout_height="0dp"

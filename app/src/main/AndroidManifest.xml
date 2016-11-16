@@ -21,6 +21,7 @@
             android:theme="@style/AppTheme.NoActionBar"></activity>
         <activity android:name=".presenter.activity.FloatButtonActivity"
             ></activity>
+        <activity android:name=".ui.NoteActivity"/>
     </application>
 
 </manifest>
