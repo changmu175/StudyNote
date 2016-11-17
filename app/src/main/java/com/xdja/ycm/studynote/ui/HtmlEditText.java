@@ -4,6 +4,7 @@ package com.xdja.ycm.studynote.ui;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.text.Editable;
 import android.text.Spannable;
 import android.text.SpannableString;
@@ -106,7 +107,7 @@ public class HtmlEditText extends EditText {
      * @param path
      */
     public void insertBitmap(String path) {
-        Bitmap bitmap = getSmallBitmap(path, 480, 800);
+        Bitmap bitmap = getZoomedDrawable(path,2);
         insertBitmap(path, bitmap);
     }
 
@@ -175,13 +176,13 @@ public class HtmlEditText extends EditText {
     public Bitmap getSmallBitmap(String filePath, int reqWidth, int reqHeight) {
         final BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
-        BitmapFactory.decodeFile(filePath, options);
+//        BitmapFactory.decodeFile(filePath, options);
 
         // Calculate inSampleSize
-        options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight);
+//        options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight);
 
         // Decode bitmap with inSampleSize set
-        options.inJustDecodeBounds = false;
+//        options.inJustDecodeBounds = false;
 
         Bitmap bitmap = BitmapFactory.decodeFile(filePath, options);
         DisplayMetrics dm = mContext.getResources().getDisplayMetrics();
@@ -193,7 +194,48 @@ public class HtmlEditText extends EditText {
         bitmap = Bitmap.createScaledBitmap(bitmap, w_width, w_height, false);
         return bitmap;
     }
+    private static final int itemw = 360;
+    private static final int itemh = 360;
+    public static Bitmap getZoomedDrawable(String filePath, int zoom) {
 
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+        BitmapFactory.decodeFile(filePath, options);
+        int mWidth = options.outWidth;
+        int mHeight = options.outHeight;
+        int s = 1;
+        while ((mWidth / s > itemw * 2 * zoom)
+                || (mHeight / s > itemh * 2 * zoom)) {
+            s *= 2;
+        }
+
+        options = new BitmapFactory.Options();
+        options.inSampleSize = s;
+        options.inPreferredConfig = Bitmap.Config.ARGB_8888;
+        options.inJustDecodeBounds = false;
+        Bitmap bm = BitmapFactory.decodeFile(filePath, options);
+
+        if (bm != null) {
+            int h = bm.getHeight();
+            int w = bm.getWidth();
+
+            float ft = (float) ((float) w / (float) h);
+            float fs = (float) ((float) itemw / (float) itemh);
+
+            int neww = ft >= fs ? itemw * zoom : (int) (itemh * zoom * ft);
+            int newh = ft >= fs ? (int) (itemw * zoom / ft) : itemh * zoom;
+
+            float scaleWidth = ((float) neww) / w;
+            float scaleHeight = ((float) newh) / h;
+
+            Matrix matrix = new Matrix();
+            matrix.postScale(scaleWidth, scaleHeight);
+            bm = Bitmap.createBitmap(bm, 0, 0, w, h, matrix, true);
+            // System.gc();
+            return bm;
+        }
+        return null;
+    }
     //计算图片的缩放值
     public int calculateInSampleSize(BitmapFactory.Options options, int reqWidth, int reqHeight) {
         final int height = options.outHeight;

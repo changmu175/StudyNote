@@ -4,7 +4,10 @@ package com.xdja.ycm.studynote.ui;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.ContentResolver;
+import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -88,6 +91,35 @@ public class NoteActivity extends Activity {
             }
         });
     }
+
+    private String getImagePathFormUri(final Context context, Uri uri) {
+        String path = null;
+        Uri selectUri = uri;
+        final String scheme = uri.getScheme();
+        if (uri != null && scheme != null) {
+            if (scheme.equals(ContentResolver.SCHEME_CONTENT)) {
+                Cursor cursor = context.getContentResolver().query(uri, null, null, null, null);
+                if (cursor != null && cursor.moveToFirst()) {
+                    int columnIndex = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+                    path = cursor.getString(columnIndex);
+
+                    if (!path.startsWith("/storage") && !path.startsWith("/mnt")) {
+                        path = "/mnt" + path;
+                    }
+                    cursor.close();
+                }
+            } else if (scheme.equals(ContentResolver.SCHEME_FILE)) {
+                path = selectUri.toString().replace("file://", "");
+                int index = path.indexOf("/sdcard");
+                path = index == -1 ? path : path.substring(index);
+                if (!path.startsWith("/mnt")) {
+                    path = "/mnt" + path;
+                }
+            }
+        }
+
+        return path;
+    }
     /**
      * 拍照部分
      */
@@ -164,6 +196,28 @@ public class NoteActivity extends Activity {
         intent.putExtra("noFaceDetection", true); // no face detection
         startActivityForResult(intent, PHOTO_REQUEST_CUT);
     }
+    //裁剪图片
+    private void startConfirm(Uri uri1) {
+        Intent intent = new Intent("com.android.camera.action.CROP");
+        intent.setDataAndType(uri1, "image/*");
+//        // crop为true是设置在开启的intent中设置显示的view可以剪裁
+//        intent.putExtra("crop", "true");
+//
+//        // aspectX aspectY 是宽高的比例
+//        intent.putExtra("aspectX", 1);
+//        intent.putExtra("aspectY", 1);
+//
+//        // outputX,outputY 是剪裁图片的宽高
+//        intent.putExtra("outputX", size);
+//        intent.putExtra("outputY", size);
+//        intent.putExtra("return-data", false);
+
+//        intent.putExtra(MediaStore.EXTRA_OUTPUT,
+//                Uri.fromFile(new File(Environment.getExternalStorageDirectory().getPath(), imageName)));
+//        intent.putExtra("outputFormat", Bitmap.CompressFormat.PNG.toString());
+//        intent.putExtra("noFaceDetection", true); // no face detection
+        startActivityForResult(intent, PHOTO_REQUEST_CUT);
+    }
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode == RESULT_OK) {
@@ -176,8 +230,14 @@ public class NoteActivity extends Activity {
                     break;
 
                 case PHOTO_REQUEST_GALLERY:
-                    if (data != null)
-                        startPhotoZoom(data.getData(), 480);
+                    String path =null;
+                    if (data != null){
+                        Uri uri = data.getData();
+                        path = getImagePathFormUri(this, uri);
+                    }
+//                    Bitmap bitmap = BitmapFactory.decodeFile(Environment.getExternalStorageDirectory().getPath()+"/"+imageName);
+                    mEditText.insertBitmap(path);
+//                        startPhotoZoom(data.getData(), 480);
                     break;
 
                 case PHOTO_REQUEST_CUT:
