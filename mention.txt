@@ -1,0 +1,325 @@
+package com.it.ycm.afloat;
+
+import android.content.Context;
+import android.graphics.PixelFormat;
+import android.support.v7.app.AppCompatActivity;
+import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.util.Log;
+import android.view.Gravity;
+import android.view.KeyEvent;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
+import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.ListView;
+import android.widget.SimpleAdapter;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.zip.Inflater;
+
+public class MainActivity extends AppCompatActivity {
+    ListView listView;
+    List<String> stringList;
+    private WindowManager mWindowManager = null;
+    private WindowManager.LayoutParams wmParams = null;
+    // 用于显示右下角浮动图标
+    private ImageView img_Float;
+    private EditText mention;
+    int position;
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        mention = (EditText) findViewById(R.id.mention);
+//        mention.setOnKeyListener(new View.OnKeyListener() {
+//            @Override
+//            public boolean onKey(View v, int keyCode, KeyEvent event) {
+//                if (keyCode == KeyEvent.KEYCODE_DEL && event.getAction() == KeyEvent.ACTION_DOWN) {
+//                    action = actions[0];
+//                    return true;
+//                }
+//                return false;
+//            }
+//        });
+        mention.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                String str = s.toString();
+                String bank = getString(R.string.bank);
+                String action = watchAction(s);
+                if (actions[0].equals(action)) {
+                    if (watchDelBankAction(s)) {
+                        del(s);
+                    }
+                } else if (actions[1].equals(action)) {
+                    position = recordPosition(s);
+                    if (position > -1 && isAt) {
+                        s = s.insert(s.length(), "呆萌症" +bank);
+                    }
+                }
+
+//                if (str.length() <= 1) {
+//                    temp = str.substring(str.length());
+//                } else if (str.length() >1) {
+//                    temp = str.substring(str.length()-1, str.length());
+//                }
+//                if ("@".equals(temp)) {
+//                    Toast.makeText(getBaseContext(), str.length()+"@", Toast.LENGTH_LONG).show();
+//                }
+//                String action = watchDelAction(s);
+//                String bank = getString(R.string.bank);
+//                if (s.toString() != null) {
+//                    if ("add".equals(action) && s.toString().endsWith("@")) {
+//                        s = s.insert(s.length(), "呆萌症" +bank);
+//                        Toast.makeText(getBaseContext(), "@", Toast.LENGTH_LONG).show();
+//                    } else if ("delete".equals(action)){
+//                        del(s);
+//                    }
+//                }
+
+
+            }
+        });
+//        stringList = getData();
+//        listView.setAdapter(new ArrayAdapter<String>(this, R.layout.list_item,getData()));
+//        createFloatView();
+    }
+    boolean isAt = false;
+//    private boolean isAt(Editable s) {
+//        boolean isAt = false;
+//        if ()
+//        return isAt;
+//    }
+    int beforLength = 0;
+    String[] actions = new String[] {"delete", "add"};
+    String action = null;
+    private String  watchAction (Editable s) {
+        int length = s.length();
+        if (length > beforLength) {
+            action = actions[1];
+        } else {
+            action = actions[0];
+        }
+        beforLength = length;
+        Log.d("bfl", beforLength+"");
+        return action;
+    }
+
+
+    int pp = -1;
+    boolean isExist = true;
+
+    /**
+     * 记录空格后一位的位置
+     * @param pos
+     * @param nick
+     * @return
+     */
+    private int reordBankPosition(int pos, String nick) {
+        int position = -1;
+        int len = nick.length();
+        position = len + pos;
+        return position;
+    }
+    /**
+     * 若空格被删除则删除字符串
+     * @param s
+     * @return
+     */
+    private Editable del(Editable s) {
+        boolean isDelBank = watchDelBankAction(s);
+//        String bank = getString(R.string.bank);
+        String str = s.toString();
+        int startposition = recordPosition(s);
+        int endposition = reordBankPosition(startposition, "呆萌症");
+        s = s.delete(startposition, endposition);
+//        pp = str.indexOf(bank);
+
+//        if (isExist && !str.contains(bank)) {
+//            isExist = !isExist;
+////            watchDelBankAction(s);
+//        }
+
+        return s;
+    }
+
+    /**
+     * 检测空格有无被删除
+     * @param s
+     * @return
+     */
+    private boolean watchDelBankAction(Editable s) {
+        String bank = getString(R.string.bank);
+        String str = s.toString();
+        boolean isDel = false;
+        if (actions[0].equals(watchAction(s))) {
+            if (!str.contains(bank)) {
+                isDel = true;
+            } else {
+                isDel = false;
+            }
+        }
+        return isDel;
+    }
+
+    /**
+     * 记录@的位置
+     * @param s
+     * @return
+     */
+    private int recordPosition(Editable s) {
+        int pos = -1;
+        String str = s.toString();
+        String temp;
+        int len = s.length();
+        if (len > 1) {
+            temp = str.substring(len - 1, len);
+        } else {
+            temp = str;
+        }
+        if ("@".equals(temp)) {
+            pos = len;
+            isAt = true;
+        } else {
+            isAt = false;
+            pos = -1;
+        }
+        return pos;
+    }
+//    private int search(String s, int position) {
+//        int p = -1;
+//        int length = s.length();
+//        for (int i = position; i>-1; i--) {
+//            String mm;
+//            if (i>0) {
+//                mm = s.substring(i-1, i);
+//            } else {
+//                mm = s.substring(0,1);
+//            }
+//            if ("@".equals(mm)) {
+//                p = i;
+//            } else {
+//
+//            }
+//        }
+//        return p;
+//    }
+//
+//
+//    private void initFloatImage() {
+//        // 获取WindowManager
+//        mWindowManager = (WindowManager) this.getSystemService(Context.WINDOW_SERVICE);
+//        // 设置LayoutParams(全局变量）相关参数
+//        wmParams = new WindowManager.LayoutParams();
+//
+//        wmParams.type = WindowManager.LayoutParams.TYPE_PHONE; // 设置window type
+//        wmParams.format = PixelFormat.RGBA_8888; // 设置图片格式，效果为背景透明
+//        // 设置Window flag
+//        wmParams.flags = WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
+//
+//        // 以屏幕左上角为原点，设置x、y初始值
+//        wmParams.x = 400;
+//        wmParams.y = 400;
+//        System.out.println("*************"+wmParams.y);
+//        // 设置悬浮窗口长宽数据
+//        wmParams.width = 200;
+//        wmParams.height = 80;
+//        img_Float = new ImageView(this);
+//        img_Float.setImageResource(R.drawable.logo_pic_xiaoerzi_logo);
+//        img_Float.setAlpha(80);
+//        img_Float.setOnClickListener(new View.OnClickListener() {
+//            public void onClick(View arg0) {
+//                // 点击悬浮图片的事件
+//            }
+//        });
+//        // 调整悬浮窗口
+//        wmParams.gravity = Gravity.RIGHT | Gravity.CENTER_VERTICAL;
+//        // 显示myFloatView图像
+//        mWindowManager.addView(img_Float, wmParams);
+//    }
+//    /**
+//     * 创建悬浮图片按钮
+//     */
+//    private void createFloatView() {
+//        img_Float = new ImageView(this);
+//        img_Float.setImageResource(R.drawable.logo_pic_xiaoerzi_logo);
+//        img_Float.setAlpha(80);
+//        img_Float.setOnClickListener(new View.OnClickListener() {
+//            public void onClick(View arg0) {
+//                // 点击悬浮图片的事件
+//            }
+//        });
+//        // 调整悬浮窗口
+//        wmParams.gravity = Gravity.LEFT | Gravity.CENTER_VERTICAL;
+//        // 显示myFloatView图像
+//        mWindowManager.addView(img_Float, wmParams);
+//    }
+//    private List<String> getData() {
+//        stringList = new ArrayList<>();
+//        String a = "yuchangmu";
+//        for (int i = 0; i < 100; i++) {
+//            stringList.add(a + i);
+//        }
+//        return stringList;
+//    }
+//
+//    class A extends BaseAdapter {
+//        LayoutInflater layoutInflater = null;
+////        public A(Context context) {
+////            this.layoutInflater = LayoutInflater.from(context);
+////        }
+//        @Override
+//        public int getCount() {
+//            return stringList.size();
+//        }
+//
+//        @Override
+//        public Object getItem(int position) {
+//            return stringList.get(position);
+//        }
+//
+//        @Override
+//        public long getItemId(int position) {
+//            return position;
+//        }
+//
+//        @Override
+//        public View getView(int position, View convertView, ViewGroup parent) {
+//            Holder holder = null;
+//            if (convertView == null ){
+//                holder = new Holder();
+//                convertView = LayoutInflater.from(getBaseContext()).inflate(R.layout.list_item, null);
+//                holder.tv = (TextView) convertView.findViewById(R.id.list_item);
+//                convertView.setTag(holder);
+//            } else {
+//                holder = (Holder) convertView.getTag();
+//            }
+//
+//            holder.tv.setText(stringList.get(position));
+//
+//            return convertView;
+//        }
+//        class Holder{
+//            TextView tv;
+//        }
+//
+//    }
+}
