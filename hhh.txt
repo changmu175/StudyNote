@@ -1,0 +1,459 @@
+package com.xdjaxa.ycm.sharedtest;
+
+import android.graphics.Color;
+import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
+import android.text.Editable;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.SpannableStringBuilder;
+import android.text.Spanned;
+import android.text.TextWatcher;
+import android.text.style.ForegroundColorSpan;
+import android.text.style.URLSpan;
+import android.text.util.Linkify;
+import android.util.Log;
+import android.util.Patterns;
+import android.view.KeyEvent;
+import android.view.View;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import android.text.util.Linkify.MatchFilter;
+import android.text.util.Linkify.TransformFilter;
+
+public class MainActivity extends AppCompatActivity {
+
+    EditText editText;
+    int pos = -1;
+    int position;
+    TextView link;
+    TextView link1;
+    Button a;
+    String s = "手机号： www.baidu.com 电话： baidu.com 全网址：http://c.m.163.com/news/s/S1451880.html?spss=newsapp&spsw=1 邮箱：5692934@qq.com";
+    String s1 = "手机号：13488231051电话：86892713";
+
+    LinkSpec linkSpec = new LinkSpec();
+//    ArrayList<LinkSpec> links = new ArrayList<LinkSpec>();
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        link = (TextView) findViewById(R.id.link);
+        link1 = (TextView) findViewById(R.id.link1);
+        a = (Button) findViewById(R.id.a);
+        link.setText(s+s1);
+        a.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+//                gatherLinks(links, s, linkSpec.EMAIL_ADDRESS, schemes, sUrlMatchFilter, null);
+                SpannableString s = SpannableString.valueOf(link.getText());
+                addLinks(s, ALL);
+                link1.setText(s);
+//                getTellLink(links, s,linkSpec.EMAIL_ADDRESS);
+            }
+        });
+//        editText = (EditText) findViewById(R.id.et);
+//        editText.setOnKeyListener(new View.OnKeyListener() {
+//            @Override
+//            public boolean onKey(View v, int keyCode, KeyEvent event) {
+//                if (keyCode == KeyEvent.KEYCODE_AT && event.getAction() == KeyEvent.ACTION_UP) {
+//                    Toast.makeText(getBaseContext(), "@", Toast.LENGTH_LONG).show();
+//                }
+//                return false;
+//            }
+//        });
+//        editText.addTextChangedListener(new TextWatcher() {
+//            @Override
+//            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+//
+//            }
+//
+//            @Override
+//            public void onTextChanged(CharSequence s, int start, int before, int count) {
+//
+//            }
+//
+//            @Override
+//            public void afterTextChanged(Editable s) {
+////                /**
+////                 * 1、发现@， @的位置， @+昵称的位置 存在@
+////                 * 2、删除空格
+////                 */
+////                String bank = getString(R.string.bank);
+////                String action = watchAction(s); //监视是删除还是输入
+////                if (actions[0].equals(action)) { //删除动作
+////                    if (watchDelBankAction(s)) {
+////                        del(s);
+////                    }
+////                } else if (actions[1].equals(action)) {//输入动作
+////                    position = recordPosition(s.toString());// 发现并记录@ 的位置
+////                    if (isAt) { //如果有@，输入昵称+空格
+////                        s = s.insert(s.length(), "呆萌症" +bank);
+////                    }
+////                }
+//            }
+//        });
+    }
+
+
+    public static final MatchFilter sUrlMatchFilter = new MatchFilter() {
+        public final boolean acceptMatch(CharSequence s, int start, int end) {
+            if (start == 0) {
+                return true;
+            }
+
+            if (s.charAt(start - 1) == '@') {
+                return false;
+            }
+
+            return true;
+        }
+    };
+
+    private static final void gatherLinks(ArrayList<LinkSpec> links,
+                                          Spannable s, Pattern pattern, String[] schemes, MatchFilter matchFilter
+            , TransformFilter transformFilter) {
+        Matcher m = pattern.matcher(s);
+        while (m.find()) {
+            int start = m.start();
+            int end = m.end();
+            LinkSpec spec = new LinkSpec();
+            String url = makeUrl(m.group(0), schemes, m, transformFilter);
+            spec.url = url;
+            spec.start = start;
+            spec.end = end;
+            links.add(spec);
+        }
+    }
+
+    private static final String makeUrl(String url, String[] prefixes,
+                                        Matcher m, Linkify.TransformFilter filter) {
+        if (filter != null) {
+            url = filter.transformUrl(m, url);
+        }
+
+        boolean hasPrefix = false;
+
+        for (int i = 0; i < prefixes.length; i++) {
+            if (url.regionMatches(true, 0, prefixes[i], 0,
+                    prefixes[i].length())) {
+                hasPrefix = true;
+                if (!url.regionMatches(false, 0, prefixes[i], 0, prefixes[i].length())) {
+                    url = prefixes[i] + url.substring(prefixes[i].length());
+                }
+                break;
+            }
+        }
+
+        if (!hasPrefix) {
+            url = prefixes[0] + url;
+        }
+        return url;
+    }
+
+    //    int WEB_URLS = 0x01;
+    private static final int WEB_URLS = 0x01;
+    private static final int EMAIL_ADDRESSES = 0x02;
+    private static final int PHONE_NUMBERS = 0x04;
+    private static final int ALL = WEB_URLS|EMAIL_ADDRESSES|PHONE_NUMBERS;
+
+    public final boolean addLinks(Spannable text, int mask) {
+        if (mask == 0) {
+            return false;
+        }
+        ArrayList<LinkSpec> links = new ArrayList<LinkSpec>();
+        if ((mask & WEB_URLS) != 0) {
+            gatherLinks(links, text, Patterns.WEB_URL,
+                    new String[]{"http://", "https://", "rtsp://"},
+                    sUrlMatchFilter, null);
+        }
+
+        if ((mask & EMAIL_ADDRESSES) != 0) {
+            gatherLinks(links, text, Patterns.EMAIL_ADDRESS,
+                    new String[]{"mailto:"},
+                    null, null);
+        }
+
+        if ((mask & PHONE_NUMBERS) != 0) {
+            getTellLink(links, text, Patterns.PHONE);
+        }
+
+//    if ((mask & MAP_ADDRESSES) != 0) {
+//        gatherMapLinks(links, text);
+//    }
+
+        pruneOverlaps(links);
+
+        if (links.size() == 0) {
+            return false;
+        }
+
+        for (LinkSpec link : links) {
+            Spannable spannable = new SpannableString(text);
+            applyLink(link.url, link.start, link.end, spannable);
+        }
+
+        return true;
+    }
+
+    private static final void applyLink(String url, int start, int end, Spannable text) {
+
+//        URLSpan span = new URLSpan(url);
+        SpannableStringBuilder spannable = new SpannableStringBuilder();
+        ForegroundColorSpan linkColor = new ForegroundColorSpan(Color.RED);
+        spannable.setSpan(linkColor, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+//        text.setSpan(spannable, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+    }
+    private static void getTellLink(ArrayList<LinkSpec> links, Spannable s, Pattern pattern) {
+        Matcher m = pattern.matcher(s);
+        while (m.find()) {
+            int start = m.start();
+            int end = m.end();
+            LinkSpec spec = new LinkSpec();
+            String num = makeUrl(m.group(0), new String[]{"tel:"}, m, null);
+            spec.url = num;
+            spec.start = start;
+            spec.end = end;
+            links.add(spec);
+        }
+    }
+
+    String[] schemes = new String[]{"http://", "https://", "rtsp://"};
+    public static final String GOOD_IRI_CHAR =
+            "a-zA-Z0-9\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF";
+    private static final String IRI
+            = "[" + GOOD_IRI_CHAR + "]([" + GOOD_IRI_CHAR + "\\-]{0,61}[" + GOOD_IRI_CHAR + "]){0,1}";
+    private static final String GOOD_GTLD_CHAR =
+            "a-zA-Z\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF";
+    private static final String GTLD = "[" + GOOD_GTLD_CHAR + "]{2,63}";
+    private static final String HOST_NAME = "(" + IRI + "\\.)+" + GTLD;
+    public static final Pattern IP_ADDRESS
+            = Pattern.compile(
+            "((25[0-5]|2[0-4][0-9]|[0-1][0-9]{2}|[1-9][0-9]|[1-9])\\.(25[0-5]|2[0-4]"
+                    + "[0-9]|[0-1][0-9]{2}|[1-9][0-9]|[1-9]|0)\\.(25[0-5]|2[0-4][0-9]|[0-1]"
+                    + "[0-9]{2}|[1-9][0-9]|[1-9]|0)\\.(25[0-5]|2[0-4][0-9]|[0-1][0-9]{2}"
+                    + "|[1-9][0-9]|[0-9]))");
+    public static final Pattern DOMAIN_NAME
+            = Pattern.compile("(" + HOST_NAME + "|" + IP_ADDRESS + ")");
+
+    static class LinkSpec {
+        String url;
+        int start;
+        int end;
+        public static final Pattern PHONE
+                = Pattern.compile(
+                "(\\+[0-9]+[\\- \\.]*)?"
+                        + "(\\([0-9]+\\)[\\- \\.]*)?"
+                        + "([0-9][0-9\\- \\.]+[0-9])");
+
+        public static final Pattern EMAIL_ADDRESS
+                = Pattern.compile(
+                "[a-zA-Z0-9\\+\\.\\_\\%\\-\\+]{1,256}" +
+                        "\\@" +
+                        "[a-zA-Z0-9][a-zA-Z0-9\\-]{0,64}" +
+                        "(" +
+                        "\\." +
+                        "[a-zA-Z0-9][a-zA-Z0-9\\-]{0,25}" +
+                        ")+"
+        );
+
+        public static final Pattern WEB_URL = Pattern.compile(
+                "((?:(http|https|Http|Https|rtsp|Rtsp):\\/\\/(?:(?:[a-zA-Z0-9\\$\\-\\_\\.\\+\\!\\*\\'\\(\\)"
+                        + "\\,\\;\\?\\&\\=]|(?:\\%[a-fA-F0-9]{2})){1,64}(?:\\:(?:[a-zA-Z0-9\\$\\-\\_"
+                        + "\\.\\+\\!\\*\\'\\(\\)\\,\\;\\?\\&\\=]|(?:\\%[a-fA-F0-9]{2})){1,25})?\\@)?)?"
+                        + "(?:" + DOMAIN_NAME + ")"
+                        + "(?:\\:\\d{1,5})?)" // plus option port number
+                        + "(\\/(?:(?:[" + "\\;\\/\\?\\:\\@\\&\\=\\#\\~"  // plus option query params
+                        + "\\-\\.\\+\\!\\*\\'\\(\\)\\,\\_])|(?:\\%[a-fA-F0-9]{2}))*)?"
+                        + "(?:\\b|$)");
+
+        public static final String WEBREGEX2 = "(www\\.)?[^\\u4E00-\\u9FFF]+\\.([a-zA-Z0-9]{2,4})";
+        public static final String WEBREGEX = "((f|ht){1}(tp|tps):\\/\\/)?([\\w-]+\\.)+[^\\u4E00-\\u9FFF]+(\\/[\\w- ./?%&=]*)?";
+        public static final Pattern WEB_URL2 = Pattern.compile(WEBREGEX);
+    }
+
+    private static final void pruneOverlaps(ArrayList<LinkSpec> links) {
+        Comparator<LinkSpec> c = new Comparator<LinkSpec>() {
+            public final int compare(LinkSpec a, LinkSpec b) {
+                if (a.start < b.start) {
+                    return -1;
+                }
+
+                if (a.start > b.start) {
+                    return 1;
+                }
+
+                if (a.end < b.end) {
+                    return 1;
+                }
+
+                if (a.end > b.end) {
+                    return -1;
+                }
+
+                return 0;
+            }
+        };
+
+        Collections.sort(links, c);
+
+        int len = links.size();
+        int i = 0;
+
+        while (i < len - 1) {
+            LinkSpec a = links.get(i);
+            LinkSpec b = links.get(i + 1);
+            int remove = -1;
+
+            if ((a.start <= b.start) && (a.end > b.start)) {
+                if (b.end <= a.end) {
+                    remove = i + 1;
+                } else if ((a.end - a.start) > (b.end - b.start)) {
+                    remove = i + 1;
+                } else if ((a.end - a.start) < (b.end - b.start)) {
+                    remove = i;
+                }
+
+                if (remove != -1) {
+                    links.remove(remove);
+                    len--;
+                    continue;
+                }
+
+            }
+
+            i++;
+        }
+    }
+
+
+
+
+
+
+
+
+
+
+
+    /*************************************************/
+
+
+
+    boolean isAt = false;
+    //        private boolean isAt(Editable s) {
+//            boolean isAt = false;
+//
+//        if ("@".equals())
+//        return isAt;
+//    }
+    int beforLength = 0;
+    String[] actions = new String[]{"delete", "add"};
+    String action = null;
+
+    private String watchAction(Editable s) {
+        int length = s.length();
+        if (length > beforLength) {
+            action = actions[1];
+        } else {
+            action = actions[0];
+        }
+        beforLength = length;
+        Log.d("bfl", beforLength + "");
+        return action;
+    }
+
+
+    int pp = -1;
+    boolean isExist = true;
+
+    /**
+     * 记录空格后一位的位置
+     *
+     * @param pos
+     * @param nick
+     * @return
+     */
+    private int reordBankPosition(int pos, String nick) {
+        int position = -1;
+        int len = nick.length();
+        position = len + pos;
+        return position;
+    }
+
+    /**
+     * 若空格被删除则删除字符串
+     *
+     * @param s
+     * @return
+     */
+    private Editable del(Editable s) {
+        boolean isDelBank = watchDelBankAction(s);
+        String str = s.toString();
+        int startposition = recordPosition(s.toString());
+        int endposition = reordBankPosition(startposition, "呆萌症");
+        s = s.delete(startposition, endposition);
+        isAt = false;
+        position = -1;
+        return s;
+    }
+
+    /**
+     * 检测空格有无被删除
+     *
+     * @param s
+     * @return
+     */
+    private boolean watchDelBankAction(Editable s) {
+        String bank = getString(R.string.bank);
+        String str = s.toString();
+        boolean isDel = false;
+        if (actions[0].equals(watchAction(s))) {
+            if (!str.contains(bank)) {
+                isDel = true;
+            } else {
+                isDel = false;
+            }
+        }
+        return isDel;
+    }
+
+    /**
+     * 记录@的位置
+     *
+     * @param str
+     * @return
+     */
+    private int recordPosition(String str) {
+        int pos = -1;
+//        String str = s.toString();
+        String temp;
+        int len = str.length();
+        if (len > 1) {
+            temp = str.substring(len - 1, len);
+        } else {
+            temp = str;
+        }
+        if ("@".equals(temp)) {
+            pos = len;
+            isAt = true;
+        }
+        return pos;
+    }
+}
