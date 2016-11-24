@@ -64,7 +64,6 @@ public class MainActivity extends AppCompatActivity {
 //                gatherLinks(links, s, linkSpec.EMAIL_ADDRESS, schemes, sUrlMatchFilter, null);
                 SpannableString s = SpannableString.valueOf(link.getText());
                 addLinks(s, ALL);
-                link1.setText(s);
 //                getTellLink(links, s,linkSpec.EMAIL_ADDRESS);
             }
         });
@@ -203,22 +202,27 @@ public class MainActivity extends AppCompatActivity {
         if (links.size() == 0) {
             return false;
         }
-
+        SpannableStringBuilder builder = new SpannableStringBuilder(text);
         for (LinkSpec link : links) {
-            Spannable spannable = new SpannableString(text);
-            applyLink(link.url, link.start, link.end, spannable);
-        }
+            ForegroundColorSpan linkColor = new ForegroundColorSpan(Color.RED);
+            builder.setSpan(linkColor, link.start, link.end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
 
+//            Spannable spannable = new SpannableString(text);
+//            applyLink(link.url, link.start, link.end, text);
+        }
+        link1.setText(builder);
+//        link1.setText(text);
         return true;
     }
 
-    private static final void applyLink(String url, int start, int end, Spannable text) {
+    private final void applyLink(String url, int start, int end, Spannable text) {
 
 //        URLSpan span = new URLSpan(url);
-        SpannableStringBuilder spannable = new SpannableStringBuilder();
+        SpannableStringBuilder builder = new SpannableStringBuilder(text);
         ForegroundColorSpan linkColor = new ForegroundColorSpan(Color.RED);
-        spannable.setSpan(linkColor, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-//        text.setSpan(spannable, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        builder.setSpan(linkColor, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        link1.setText(builder);
+//        text.setSpan(builder, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
     }
     private static void getTellLink(ArrayList<LinkSpec> links, Spannable s, Pattern pattern) {
         Matcher m = pattern.matcher(s);
