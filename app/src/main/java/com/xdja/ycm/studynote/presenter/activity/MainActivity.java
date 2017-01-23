@@ -9,6 +9,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 
 import com.xdja.ycm.studynote.R;
+import com.xdja.ycm.studynote.db.DbHelper;
 import com.xdja.ycm.studynote.ui.NoteActivity;
 
 import butterknife.ButterKnife;
@@ -28,6 +29,13 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         ButterKnife.inject(this);
         setSupportActionBar(toolbar);
+        try{
+            DbHelper.getInstance().initDatabase(getBaseContext());
+            DbHelper.getInstance().getDatebase();
+        } catch (Exception e) {
+
+        }
+
 //        initView();
     }
     private void initView() {
